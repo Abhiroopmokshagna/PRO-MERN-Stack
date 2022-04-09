@@ -1,6 +1,10 @@
+const continents = ["Africa", "America", "Asia", "Australia", "Europe"];
+const helloContinents = Array.from(continents, (c) => `Namaste ${c} !`);
+const message = helloContinents.join(" ");
+
 const element = (
   <div title="Outer div">
-    <h1>Hello World!</h1>
+    <h1>{message}</h1>
   </div>
 );
 
