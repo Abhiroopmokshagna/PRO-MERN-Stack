@@ -1,0 +1,15 @@
+{
+  "name": "pro-mern-stack",
+  "version": "1.0.0",
+  "description": "Complete MERN learning following the book Pro MERN Stack 2",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Mokshagna Bheemineni",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.3"
+  }
+}
