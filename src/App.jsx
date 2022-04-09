@@ -1,5 +1,5 @@
 const continents = ["Africa", "America", "Asia", "Australia", "Europe"];
-const helloContinents = Array.from(continents, (c) => `Hello ${c} !`);
+const helloContinents = Array.from(continents, (c) => `Namaste ${c} !`);
 const message = helloContinents.join(" ");
 
 const element = (
