@@ -1,4 +1,4 @@
-const issues = [
+const initialIssues = [
   {
     id: 1,
     status: "New",
@@ -30,22 +30,27 @@ class IssueRow extends React.Component {
     const issue = this.props.issue;
     return (
       <tr>
-        <td >{issue.id}</td>
+        <td>{issue.id}</td>
         <td>{issue.status}</td>
         <td>{issue.owner}</td>
         <td>{issue.created.toDateString()}</td>
         <td>{issue.effort}</td>
-        <td>{issue.due ? issue.due.toDateString() : ''}</td>
+        <td>{issue.due ? issue.due.toDateString() : ""}</td>
         <td>{issue.title}</td>
       </tr>
     );
   }
 }
 
-
 class IssueTable extends React.Component {
+  constructor() {
+    super();
+    this.state = { issues: initialIssues };
+  }
   render() {
-    const issueRows = issues.map(issue => <IssueRow key = {issue.id} issue={issue}/>);
+    const issueRows = this.state.issues.map((issue) => (
+      <IssueRow key={issue.id} issue={issue} />
+    ));
     return (
       <table className="bordered-table">
         <thead>
@@ -59,9 +64,7 @@ class IssueTable extends React.Component {
             <th>Title</th>
           </tr>
         </thead>
-        <tbody>
-          {issueRows}
-        </tbody>
+        <tbody>{issueRows}</tbody>
       </table>
     );
   }

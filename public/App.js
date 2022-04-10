@@ -22,7 +22,7 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-var issues = [{
+var initialIssues = [{
   id: 1,
   status: "New",
   owner: "Ravan",
@@ -76,7 +76,7 @@ var IssueRow = /*#__PURE__*/function (_React$Component2) {
     key: "render",
     value: function render() {
       var issue = this.props.issue;
-      return /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", null, issue.id), /*#__PURE__*/React.createElement("td", null, issue.status), /*#__PURE__*/React.createElement("td", null, issue.owner), /*#__PURE__*/React.createElement("td", null, issue.created.toDateString()), /*#__PURE__*/React.createElement("td", null, issue.effort), /*#__PURE__*/React.createElement("td", null, issue.due ? issue.due.toDateString() : ''), /*#__PURE__*/React.createElement("td", null, issue.title));
+      return /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", null, issue.id), /*#__PURE__*/React.createElement("td", null, issue.status), /*#__PURE__*/React.createElement("td", null, issue.owner), /*#__PURE__*/React.createElement("td", null, issue.created.toDateString()), /*#__PURE__*/React.createElement("td", null, issue.effort), /*#__PURE__*/React.createElement("td", null, issue.due ? issue.due.toDateString() : ""), /*#__PURE__*/React.createElement("td", null, issue.title));
     }
   }]);
 
@@ -89,15 +89,21 @@ var IssueTable = /*#__PURE__*/function (_React$Component3) {
   var _super3 = _createSuper(IssueTable);
 
   function IssueTable() {
+    var _this;
+
     _classCallCheck(this, IssueTable);
 
-    return _super3.apply(this, arguments);
+    _this = _super3.call(this);
+    _this.state = {
+      issues: initialIssues
+    };
+    return _this;
   }
 
   _createClass(IssueTable, [{
     key: "render",
     value: function render() {
-      var issueRows = issues.map(function (issue) {
+      var issueRows = this.state.issues.map(function (issue) {
         return /*#__PURE__*/React.createElement(IssueRow, {
           key: issue.id,
           issue: issue
