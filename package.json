@@ -4,7 +4,7 @@
   "description": "Complete MERN learning following the book Pro MERN Stack 2",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon -w server server/server.js",
+    "start": "nodemon -w server -e js,graphql server/server.js",
     "compile": "babel src --out-dir public",
     "watch": "babel src --out-dir public --watch --verbose",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -12,7 +12,9 @@
   "author": "Mokshagna Bheemineni",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.3"
+    "apollo-server-express": "^2.25.3",
+    "express": "^4.17.3",
+    "graphql": "^0.13.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.17.6",
