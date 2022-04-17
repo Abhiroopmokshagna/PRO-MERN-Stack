@@ -17,6 +17,17 @@ async function connectToDb() {
   db = client.db();
 }
 
+async function getNextSequence(name) {
+  const result = await db
+    .collection("counters")
+    .findOneAndUpdate(
+      { _id: name },
+      { $inc: { current: 1 } },
+      { returnOriginal: false }
+    );
+  return result.value.current;
+}
+
 const GraphQLDate = new GraphQLScalarType({
   name: "GraphQLDate",
   description: "A Date() type in GraphQL as a scalar",
@@ -64,12 +75,16 @@ function issueValidate(issue) {
   }
 }
 
-function issueAdd(_, { issue }) {
+async function issueAdd(_, { issue }) {
   issueValidate(issue);
   issue.created = new Date();
-  issue.id = issuesDB.length + 1;
-  issuesDB.push(issue);
-  return issue;
+  issue.id = await getNextSequence("issues");
+
+  const result = await db.collection("issues").insertOne(issue);
+  const savedIssue = await db
+    .collection("issues")
+    .findOne({ _id: result.insertedId });
+  return savedIssue;
 }
 
 async function issueList() {
