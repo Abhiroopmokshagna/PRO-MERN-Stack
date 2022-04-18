@@ -1,0 +1,19 @@
+{
+  "name": "pro-mern-stack-2-api",
+  "version": "1.0.0",
+  "description": "PRO MERN Stack (2nd Edition) API",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon -e js,graphql server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "abhiroopmokshagnabheemineni@gmail.com",
+  "license": "ISC",
+  "dependencies": {
+    "apollo-server-express": "^2.3.1",
+    "express": "^4.16.4",
+    "graphql": "^0.13.2",
+    "mongodb": "^3.1.10",
+    "nodemon": "^1.18.9"
+  }
+}
