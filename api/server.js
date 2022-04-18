@@ -4,8 +4,10 @@ const { ApolloServer, UserInputError } = require("apollo-server-express");
 const { Kind } = require("graphql/language");
 const { GraphQLScalarType } = require("graphql");
 const { MongoClient } = require("mongodb");
+require("dotenv").config();
 
-const url = "mongodb://localhost/issuetracker";
+const url = process.env.DB_URL || "mongodb://localhost/issuetracker";
+const port = process.env.API_SERVER_PORT || 5000;
 let db;
 
 let aboutMessage = "Issue Tracker API v1.0";
@@ -13,7 +15,7 @@ let aboutMessage = "Issue Tracker API v1.0";
 async function connectToDb() {
   const client = new MongoClient(url, { useNewUrlParser: true });
   await client.connect();
-  console.log("Connected to MongoDB at", url);
+  console.log("Connected to MongoDB URL", url);
   db = client.db();
 }
 
@@ -100,15 +102,18 @@ const server = new ApolloServer({
   },
 });
 
+const enableCors = (process.env.ENABLE_CORS || "true") == "true";
+console.log("CORS setting:", enableCors);
+
 const app = express();
 
-server.applyMiddleware({ app, path: "/graphql" });
+server.applyMiddleware({ app, path: "/graphql", cors: enableCors });
 
 (async function () {
   try {
     await connectToDb();
-    app.listen(5000, () => {
-      console.log("API Server Listening on port 5000");
+    app.listen(port, () => {
+      console.log(`API Server Listening on port ${port}`);
     });
   } catch (error) {
     console.log("ERROR: ", error);
