@@ -3,7 +3,7 @@ import IssueFilter from "./IssueFilter.jsx";
 import IssueTable from "./IssueTable.jsx";
 import IssueAdd from "./IssueAdd.jsx";
 import graphQLFetch from "./graphQLFetch";
-
+import URLSearchParams from "url-search-params";
 export default class IssueList extends React.Component {
   constructor() {
     super();
@@ -13,14 +13,32 @@ export default class IssueList extends React.Component {
   componentDidMount() {
     this.loadData();
   }
+  componentDidUpdate(prevProps) {
+    const {
+      location: { search: prevSearch },
+    } = prevProps;
+    const {
+      location: { search },
+    } = this.props;
+    if (prevSearch !== search) {
+      this.loadData();
+    }
+  }
   async loadData() {
-    const query = `query {
-        issueList {
+    const {
+      location: { search },
+    } = this.props;
+    const params = new URLSearchParams(search);
+
+    const vars = {};
+    if (params.get("status")) vars.status = params.get("status");
+    const query = `query issueList($status: StatusType) {
+        issueList(status: $status) {
           id title status owner
           created effort due
         }
       }`;
-    const data = await graphQLFetch(query);
+    const data = await graphQLFetch(query, vars);
     if (data) {
       this.setState({ issues: data.issueList });
     }
