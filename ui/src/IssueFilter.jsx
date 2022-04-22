@@ -29,7 +29,7 @@ class IssueFilter extends React.Component {
           Status:{" "}
           <select onChange={this.onChangeStatus}>
             <option value="">(All)</option>
-            <option value="New">New Issues</option>
+            <option value="New">New Issuesy</option>
             <option value="Assigned">Assigned Issues</option>
             <option value="Fixed">Fixed</option>
             <option value="Closed">Closed</option>
