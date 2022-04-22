@@ -4,24 +4,35 @@
   "description": "Pro MERN Stack (2nd Edition) - UI",
   "main": "index.js",
   "scripts": {
+    "#start": "UI server. HMR is enabled in dev mode.",
     "start": "nodemon -w uiserver.js -w .env uiserver.js",
-    "compile": "babel src --out-dir public",
-    "watch": "babel src --out-dir public --watch --verbose"
+    "#compile": "Generates JS bundles for production. Use with start.",
+    "compile": "webpack --mode production",
+    "#watch": "Compile, and recompile on any changes.",
+    "watch": "webpack --watch"
   },
   "author": "abhiroopmokshagnabheemineni@gmail.com",
   "license": "ISC",
   "dependencies": {
+    "babel-polyfill": "^6.26.0",
     "dotenv": "^6.2.0",
     "express": "^4.16.3",
     "http-proxy-middleware": "^0.21.0",
-    "nodemon": "^1.18.4"
+    "nodemon": "^1.18.4",
+    "prop-types": "^15.8.1",
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0",
+    "whatwg-fetch": "^3.6.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0",
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
     "@babel/preset-react": "^7.0.0",
+    "babel-loader": "^8.2.5",
     "webpack": "^4.46.0",
-    "webpack-cli": "^3.3.12"
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-middleware": "^3.7.3",
+    "webpack-hot-middleware": "^2.25.1"
   }
 }
