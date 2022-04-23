@@ -1,5 +1,6 @@
 import React from "react";
 import { withRouter } from "react-router-dom";
+import URLSearchParams from "url-search-params";
 class IssueFilter extends React.Component {
   constructor() {
     super();
@@ -14,22 +15,20 @@ class IssueFilter extends React.Component {
     });
   }
   render() {
+    const {
+      location: { search },
+    } = this.props;
+    const params = new URLSearchParams(search);
     return (
       <div>
-        {/* <Link to="/issues">All Issues</Link>
-        {" | "}
-        <Link to={{ pathname: "/issues", search: "?status=New" }}>
-          New Issues
-        </Link>
-        {" | "}
-        <Link to={{ pathname: "issues", search: "?status=Assigned" }}>
-          Assigned Issues
-        </Link> */}
         <div>
           Status:{" "}
-          <select onChange={this.onChangeStatus}>
+          <select
+            value={params.get("status") || ""}
+            onChange={this.onChangeStatus}
+          >
             <option value="">(All)</option>
-            <option value="New">New Issuesy</option>
+            <option value="New">New Issues</option>
             <option value="Assigned">Assigned Issues</option>
             <option value="Fixed">Fixed</option>
             <option value="Closed">Closed</option>
