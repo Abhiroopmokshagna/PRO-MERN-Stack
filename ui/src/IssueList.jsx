@@ -6,6 +6,9 @@ import graphQLFetch from "./graphQLFetch";
 import URLSearchParams from "url-search-params";
 import { Route } from "react-router-dom";
 import IssueDetail from "./IssueDetail.jsx";
+import { Panel } from "react-bootstrap";
+import PanelHeading from "react-bootstrap/lib/panelheading";
+import PanelTitle from "react-bootstrap/lib/paneltitle";
 export default class IssueList extends React.Component {
   constructor() {
     super();
@@ -120,7 +123,14 @@ export default class IssueList extends React.Component {
     const { match } = this.props;
     return (
       <React.Fragment>
-        <IssueFilter />
+        <Panel>
+          <PanelHeading>
+            <PanelTitle toggle>Filter</PanelTitle>
+          </PanelHeading>
+          <Panel.Body collapsible>
+            <IssueFilter />
+          </Panel.Body>
+        </Panel>
         <hr />
         <IssueTable
           issues={issues}

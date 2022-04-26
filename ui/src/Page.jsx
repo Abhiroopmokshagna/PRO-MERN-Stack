@@ -8,6 +8,7 @@ import {
   Glyphicon,
   Tooltip,
   OverlayTrigger,
+  Grid,
 } from "react-bootstrap";
 import Contents from "./Contents.jsx";
 import { LinkContainer } from "react-router-bootstrap";
@@ -62,14 +63,14 @@ function Footer() {
     </small>
   );
 }
-const Page = () => {
+export default function Page() {
   return (
     <div>
       <NavBar />
-      <Contents />
+      <Grid fluid>
+        <Contents />
+      </Grid>
       <Footer />
     </div>
   );
-};
-
-export default Page;
+}
