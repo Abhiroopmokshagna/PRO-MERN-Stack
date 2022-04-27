@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "#start": "UI server. HMR is enabled in dev mode.",
-    "start": "nodemon -w uiserver.js -w .env uiserver.js",
+    "start": "nodemon -w server -w .env server/uiserver.js",
     "#compile": "Generates JS bundles for production. Use with start.",
     "compile": "webpack --mode production",
     "#watch": "Compile, and recompile on any changes.",
