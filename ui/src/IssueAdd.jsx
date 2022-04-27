@@ -32,7 +32,7 @@ export default class IssueAdd extends React.Component {
           <FormControl type="text" name="owner" />
         </FormGroup>{" "}
         <FormGroup>
-          <ControlLabel>Title:</ControlLabel>
+          <ControlLabel>Title:</ControlLabel>{" "}
           <FormControl type="text" name="title" />
         </FormGroup>{" "}
         <Button bsStyle="primary" type="submit">
