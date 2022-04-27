@@ -1,7 +1,6 @@
 import React from "react";
 import IssueFilter from "./IssueFilter.jsx";
 import IssueTable from "./IssueTable.jsx";
-import IssueAdd from "./IssueAdd.jsx";
 import graphQLFetch from "./graphQLFetch";
 import URLSearchParams from "url-search-params";
 import { Route } from "react-router-dom";
@@ -19,7 +18,6 @@ export default class IssueList extends React.Component {
       toastMessage: " ",
       toastType: "info",
     };
-    this.createIssue = this.createIssue.bind(this);
     this.closeIssue = this.closeIssue.bind(this);
     this.deleteIssue = this.deleteIssue.bind(this);
     this.showSuccess = this.showSuccess.bind(this);
@@ -73,18 +71,7 @@ export default class IssueList extends React.Component {
       this.setState({ issues: data.issueList });
     }
   }
-  async createIssue(issue) {
-    const query = `mutation issueAdd($issue: IssueInputs!) {
-        issueAdd(issue: $issue) {
-          id
-        }
-      }`;
 
-    const data = await graphQLFetch(query, { issue }, this.showError);
-    if (data) {
-      this.loadData();
-    }
-  }
   async closeIssue(index) {
     const query = `mutation issueClose($id: Int!) {
       issueUpdate(id: $id, changes: {status: Closed}) {
@@ -173,8 +160,6 @@ export default class IssueList extends React.Component {
           closeIssue={this.closeIssue}
           deleteIssue={this.deleteIssue}
         />
-
-        <IssueAdd createIssue={this.createIssue} />
 
         <Route path={`${match.path}/:id`} component={IssueDetail} />
         <Toast
