@@ -10,8 +10,11 @@ export default async function graphQLFetch(
   variables = {},
   showError = null
 ) {
+  const apiEndpoint = __isBrowser__
+    ? window.ENV.UI_API_ENDPOINT
+    : process.env.UI_SERVER_API_ENDPOINT;
   try {
-    const response = await fetch(window.ENV.UI_API_ENDPOINT, {
+    const response = await fetch(apiEndpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query, variables }),

@@ -5,9 +5,14 @@ import proxy from "http-proxy-middleware";
 import SourceMapSupport from "source-map-support";
 import render from "./render.jsx";
 const port = process.env.UI_SERVER_PORT || 8000;
-const UI_API_ENDPOINT =
-  process.env.UI_API_ENDPOINT || "http://localhost:5000/graphql";
-const env = { UI_API_ENDPOINT };
+
+if (!process.env.UI_API_ENDPOINT) {
+  process.env.UI_API_ENDPOINT = "http://localhost:5000/graphql";
+}
+
+if (!process.env.UI_SERVER_API_ENDPOINT) {
+  process.env.UI_SERVER_API_ENDPOINT = process.env.UI_API_ENDPOINT;
+}
 
 const app = express();
 
@@ -39,6 +44,7 @@ if (apiProxyTarget) {
 }
 
 app.get("/env.js", function (req, res) {
+  const env = { UI_API_ENDPOINT: process.env.UI_API_ENDPOINT };
   res.send(`window.ENV = ${JSON.stringify(env)}`);
 });
 app.use(express.static("public"));

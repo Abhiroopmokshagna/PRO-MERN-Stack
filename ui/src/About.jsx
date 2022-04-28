@@ -1,10 +1,11 @@
 import React from "react";
+import store from "./store.js";
 
 export default function About() {
   return (
     <div className="text-center">
       <h3>Issue Tracker version 0.9</h3>
-      <h4>API version 2.0</h4>
+      <h4>{store.initialData ? store.initialData.about : "unknown"}</h4>
     </div>
   );
 }
