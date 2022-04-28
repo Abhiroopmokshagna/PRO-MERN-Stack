@@ -5,11 +5,13 @@
   "main": "index.js",
   "scripts": {
     "#start": "UI server. HMR is enabled in dev mode.",
-    "start": "nodemon -w dist -w .env dist/server.js",
+    "start": "node dist/server.js",
     "#compile": "Generates JS bundles for production. Use with start.",
     "compile": "webpack --mode production",
-    "#watch": "Compile, and recompile on any changes.",
-    "watch": "webpack --watch"
+    "#watch-server-hmr": "Recompile server HMR bundle on changes.", 
+    "watch-server-hmr": "webpack -w --config webpack.serverHMR.js",
+    "#dev-all": "Dev mode: watch for server changes and start UI server", 
+    "dev-all": "rm dist/* && npm run watch-server-hmr & sleep 5 && npm start"
   },
   "author": "abhiroopmokshagnabheemineni@gmail.com",
   "license": "ISC",
@@ -40,6 +42,7 @@
     "webpack-cli": "^3.3.12",
     "webpack-dev-middleware": "^3.7.3",
     "webpack-hot-middleware": "^2.25.1",
+    "webpack-merge": "^4.2.2",
     "webpack-node-externals": "^1.7.2"
   }
 }

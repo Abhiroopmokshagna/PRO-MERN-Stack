@@ -42,10 +42,16 @@ app.get("/env.js", function (req, res) {
   res.send(`window.ENV = ${JSON.stringify(env)}`);
 });
 app.use(express.static("public"));
-app.get("/about", render);
+app.get("/about", (req, res, next) => {
+  render(req, res, next);
+});
 app.get("*", (req, res) => {
   res.sendFile(path.resolve("public/index.html"));
 });
 app.listen(port, function () {
   console.log(`UI started on port ${port}`);
 });
+
+if (module.hot) {
+  module.hot.accept("./render.jsx");
+}
