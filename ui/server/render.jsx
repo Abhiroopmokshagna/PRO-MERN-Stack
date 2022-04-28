@@ -1,13 +1,18 @@
 const React = require("react");
 const ReactDOMServer = require("react-dom/server");
 
-import { StaticRouter } from "react-router-dom";
+import { matchPath, StaticRouter } from "react-router-dom";
 import Page from "../src/Page.jsx";
 import template from "./template.js";
-import About from "../src/About.jsx";
+import routes from "../src/routes.js";
 import store from "../src/store.js";
 async function render(req, res) {
-  const initialData = About.fetchData();
+  const activeRoute = routes.find((route) => matchPath(req.path, route));
+  let initialData;
+  if (activeRoute && activeRoute.component.fetchData) {
+    const match = matchPath(req.path, activeRoute);
+    initialData = await activeRoute.component.fetchData(match);
+  }
   store.initialData = initialData;
   const element = (
     <StaticRouter location={req.url} context={{}}>

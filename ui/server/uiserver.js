@@ -1,5 +1,4 @@
 import dotenv from "dotenv";
-import path from "path";
 import express from "express";
 import proxy from "http-proxy-middleware";
 import SourceMapSupport from "source-map-support";
@@ -48,11 +47,8 @@ app.get("/env.js", function (req, res) {
   res.send(`window.ENV = ${JSON.stringify(env)}`);
 });
 app.use(express.static("public"));
-app.get("/about", (req, res, next) => {
+app.get("*", (req, res, next) => {
   render(req, res, next);
-});
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve("public/index.html"));
 });
 app.listen(port, function () {
   console.log(`UI started on port ${port}`);

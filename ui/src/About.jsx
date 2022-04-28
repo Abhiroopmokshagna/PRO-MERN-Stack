@@ -6,6 +6,7 @@ class About extends React.Component {
   constructor(props) {
     super(props);
     const apiAbout = store.initialData ? store.initialData.about : null;
+    delete store.initialData;
     this.state = { apiAbout };
   }
   static async fetchData() {
