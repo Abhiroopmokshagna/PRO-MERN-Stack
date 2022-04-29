@@ -2,16 +2,8 @@ import dotenv from "dotenv";
 import express from "express";
 import proxy from "http-proxy-middleware";
 import SourceMapSupport from "source-map-support";
+
 import render from "./render.jsx";
-const port = process.env.UI_SERVER_PORT || 8000;
-
-if (!process.env.UI_API_ENDPOINT) {
-  process.env.UI_API_ENDPOINT = "http://localhost:5000/graphql";
-}
-
-if (!process.env.UI_SERVER_API_ENDPOINT) {
-  process.env.UI_SERVER_API_ENDPOINT = process.env.UI_API_ENDPOINT;
-}
 
 const app = express();
 
@@ -20,8 +12,9 @@ dotenv.config();
 const enableHMR = (process.env.ENABLE_HMR || "true") === "true";
 
 if (enableHMR && process.env.NODE_ENV !== "production") {
-  console.log("Adding dev middleware, enabling HMR");
-
+  console.log("Adding dev middlware, enabling HMR");
+  /* eslint "global-require": "off" */
+  /* eslint "import/no-extraneous-dependencies": "off" */
   const webpack = require("webpack");
   const devMiddleware = require("webpack-dev-middleware");
   const hotMiddleware = require("webpack-hot-middleware");
@@ -36,21 +29,33 @@ if (enableHMR && process.env.NODE_ENV !== "production") {
   app.use(hotMiddleware(compiler));
 }
 
+app.use(express.static("public"));
+
 const apiProxyTarget = process.env.API_PROXY_TARGET;
-console.log("api proxy target: ", apiProxyTarget);
 if (apiProxyTarget) {
   app.use("/graphql", proxy({ target: apiProxyTarget }));
 }
 
-app.get("/env.js", function (req, res) {
+if (!process.env.UI_API_ENDPOINT) {
+  process.env.UI_API_ENDPOINT = "http://localhost:5000/graphql";
+}
+
+if (!process.env.UI_SERVER_API_ENDPOINT) {
+  process.env.UI_SERVER_API_ENDPOINT = process.env.UI_API_ENDPOINT;
+}
+
+app.get("/env.js", (req, res) => {
   const env = { UI_API_ENDPOINT: process.env.UI_API_ENDPOINT };
   res.send(`window.ENV = ${JSON.stringify(env)}`);
 });
-app.use(express.static("public"));
+
 app.get("*", (req, res, next) => {
   render(req, res, next);
 });
-app.listen(port, function () {
+
+const port = process.env.UI_SERVER_PORT || 8000;
+
+app.listen(port, () => {
   console.log(`UI started on port ${port}`);
 });
 

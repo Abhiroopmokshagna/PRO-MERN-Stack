@@ -1,5 +1,5 @@
-const React = require("react");
-const ReactDOMServer = require("react-dom/server");
+import React from "react";
+import ReactDOMServer from "react-dom/server";
 
 import { matchPath, StaticRouter } from "react-router-dom";
 import Page from "../src/Page.jsx";
@@ -11,7 +11,9 @@ async function render(req, res) {
   let initialData;
   if (activeRoute && activeRoute.component.fetchData) {
     const match = matchPath(req.path, activeRoute);
-    initialData = await activeRoute.component.fetchData(match);
+    const index = req.url.indexOf("?");
+    const search = index !== -1 ? req.url.substr(index) : null;
+    initialData = await activeRoute.component.fetchData(match, search);
   }
   store.initialData = initialData;
   const element = (

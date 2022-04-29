@@ -9,11 +9,14 @@ import { Panel } from "react-bootstrap";
 import PanelHeading from "react-bootstrap/lib/panelheading";
 import PanelTitle from "react-bootstrap/lib/paneltitle";
 import Toast from "./Toast.jsx";
+import store from "./store.js";
 export default class IssueList extends React.Component {
   constructor() {
     super();
+    const issues = store.initialData ? store.initialData.issueList : null;
+    delete store.initialData;
     this.state = {
-      issues: [],
+      issues,
       toastVisible: false,
       toastMessage: " ",
       toastType: "info",
@@ -25,7 +28,8 @@ export default class IssueList extends React.Component {
     this.dismissToast = this.dismissToast.bind(this);
   }
   componentDidMount() {
-    this.loadData();
+    const { issues } = this.state;
+    if (issues == null) this.loadData();
   }
   componentDidUpdate(prevProps) {
     const {
@@ -38,10 +42,7 @@ export default class IssueList extends React.Component {
       this.loadData();
     }
   }
-  async loadData() {
-    const {
-      location: { search },
-    } = this.props;
+  static async fetchData(match, search, showError) {
     const params = new URLSearchParams(search);
 
     const vars = {};
@@ -67,6 +68,14 @@ export default class IssueList extends React.Component {
         }
       }`;
     const data = await graphQLFetch(query, vars, this.showError);
+    return data;
+  }
+
+  async loadData() {
+    const {
+      location: { search },
+    } = this.props;
+    const data = await IssueList.fetchData(null, search, this.showError);
     if (data) {
       this.setState({ issues: data.issueList });
     }
@@ -142,6 +151,7 @@ export default class IssueList extends React.Component {
 
   render() {
     const { issues } = this.state;
+    if (issues == null) return null;
     const { match } = this.props;
     const { toastVisible, toastType, toastMessage } = this.state;
     return (
