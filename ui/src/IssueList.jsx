@@ -1,57 +1,17 @@
 import React from "react";
+import URLSearchParams from "url-search-params";
+import { Panel } from "react-bootstrap";
+
 import IssueFilter from "./IssueFilter.jsx";
 import IssueTable from "./IssueTable.jsx";
-import graphQLFetch from "./graphQLFetch";
-import URLSearchParams from "url-search-params";
 import IssueDetail from "./IssueDetail.jsx";
-import { Panel } from "react-bootstrap";
-import PanelHeading from "react-bootstrap/lib/panelheading";
-import PanelTitle from "react-bootstrap/lib/paneltitle";
-import Toast from "./Toast.jsx";
+import graphQLFetch from "./graphQLFetch.js";
+import withToast from "./withToast.jsx";
 import store from "./store.js";
-export default class IssueList extends React.Component {
-  constructor() {
-    super();
-    const issues = store.initialData ? store.initialData.issueList : null;
-    const selectedIssue = store.initialData ? store.initialData.issue : null;
-    delete store.initialData;
-    this.state = {
-      issues,
-      selectedIssue,
-      toastVisible: false,
-      toastMessage: " ",
-      toastType: "info",
-    };
-    this.closeIssue = this.closeIssue.bind(this);
-    this.deleteIssue = this.deleteIssue.bind(this);
-    this.showSuccess = this.showSuccess.bind(this);
-    this.showError = this.showError.bind(this);
-    this.dismissToast = this.dismissToast.bind(this);
-  }
-  componentDidMount() {
-    const { issues } = this.state;
-    if (issues == null) this.loadData();
-  }
-  componentDidUpdate(prevProps) {
-    const {
-      location: { search: prevSearch },
-      match: {
-        params: { id: prevId },
-      },
-    } = prevProps;
-    const {
-      location: { search },
-      match: {
-        params: { id },
-      },
-    } = this.props;
-    if (prevSearch !== search || prevId !== id) {
-      this.loadData();
-    }
-  }
+
+class IssueList extends React.Component {
   static async fetchData(match, search, showError) {
     const params = new URLSearchParams(search);
-
     const vars = { hasSelection: false, selectedId: 0 };
     if (params.get("status")) vars.status = params.get("status");
 
@@ -70,35 +30,72 @@ export default class IssueList extends React.Component {
     }
 
     const query = `query issueList(
-        $status: StatusType
-        $effortMin: Int
-        $effortMax: Int
-        $hasSelection: Boolean!
-        $selectedId: Int!
+      $status: StatusType
+      $effortMin: Int
+      $effortMax: Int
+      $hasSelection: Boolean!
+      $selectedId: Int!
+    ) {
+      issueList(
+        status: $status
+        effortMin: $effortMin
+        effortMax: $effortMax
       ) {
-        issueList(
-          status: $status
-          effortMin: $effortMin
-          effortMax: $effortMax
-        ) {
-          id title status owner
-          created effort due
-        }
+        id title status owner
+        created effort due
+      }
+      issue(id: $selectedId) @include (if : $hasSelection) {
+        id description
+      }
+    }`;
 
-        issue(id: $selectedId) @include (if: $hasSelection) {
-          id description
-        }
-      }`;
-    const data = await graphQLFetch(query, vars, this.showError);
+    const data = await graphQLFetch(query, vars, showError);
     return data;
+  }
+
+  constructor() {
+    super();
+    const issues = store.initialData ? store.initialData.issueList : null;
+    const selectedIssue = store.initialData ? store.initialData.issue : null;
+    delete store.initialData;
+    this.state = {
+      issues,
+      selectedIssue,
+    };
+    this.closeIssue = this.closeIssue.bind(this);
+    this.deleteIssue = this.deleteIssue.bind(this);
+  }
+
+  componentDidMount() {
+    const { issues } = this.state;
+    if (issues == null) this.loadData();
+  }
+
+  componentDidUpdate(prevProps) {
+    const {
+      location: { search: prevSearch },
+      match: {
+        params: { id: prevId },
+      },
+    } = prevProps;
+    const {
+      location: { search },
+      match: {
+        params: { id },
+      },
+    } = this.props;
+    if (prevSearch !== search || prevId !== id) {
+      this.loadData();
+    }
   }
 
   async loadData() {
     const {
       location: { search },
       match,
+      showError,
     } = this.props;
-    const data = await IssueList.fetchData(match, search, this.showError);
+    const data = await IssueList.fetchData(match, search, showError);
     if (data) {
       this.setState({ issues: data.issueList, selectedIssue: data.issue });
     }
@@ -106,16 +103,14 @@ export default class IssueList extends React.Component {
 
   async closeIssue(index) {
     const query = `mutation issueClose($id: Int!) {
-      issueUpdate(id: $id, changes: {status: Closed}) {
-        id title status owner effort created due description
+      issueUpdate(id: $id, changes: { status: Closed }) {
+        id title status owner
+        effort created due description
       }
     }`;
     const { issues } = this.state;
-    const data = await graphQLFetch(
-      query,
-      { id: issues[index].id },
-      this.showError
-    );
+    const { showError } = this.props;
+    const data = await graphQLFetch(query, { id: issues[index].id }, showError);
     if (data) {
       this.setState((prevState) => {
         const newList = [...prevState.issues];
@@ -126,6 +121,7 @@ export default class IssueList extends React.Component {
       this.loadData();
     }
   }
+
   async deleteIssue(index) {
     const query = `mutation issueDelete($id: Int!) {
       issueDelete(id: $id)
@@ -135,8 +131,9 @@ export default class IssueList extends React.Component {
       location: { pathname, search },
       history,
     } = this.props;
+    const { showSuccess, showError } = this.props;
     const { id } = issues[index];
-    const data = await graphQLFetch(query, { id });
+    const data = await graphQLFetch(query, { id }, showError);
     if (data && data.issueDelete) {
       this.setState((prevState) => {
         const newList = [...prevState.issues];
@@ -146,63 +143,39 @@ export default class IssueList extends React.Component {
         newList.splice(index, 1);
         return { issues: newList };
       });
-      this.showSuccess(`Deleted issue ${id} successfully.`);
+      showSuccess(`Deleted issue ${id} successfully.`);
     } else {
       this.loadData();
     }
   }
 
-  showSuccess(message) {
-    this.setState({
-      toastVisible: true,
-      toastMessage: message,
-      toastType: "success",
-    });
-  }
-
-  showError(message) {
-    this.setState({
-      toastVisible: true,
-      toastMessage: message,
-      toastType: "danger",
-    });
-  }
-
-  dismissToast() {
-    this.setState({ toastVisible: false });
-  }
-
   render() {
     const { issues } = this.state;
     if (issues == null) return null;
+
     const { selectedIssue } = this.state;
-    const { toastVisible, toastType, toastMessage } = this.state;
     return (
       <React.Fragment>
         <Panel>
-          <PanelHeading>
-            <PanelTitle toggle>Filter</PanelTitle>
-          </PanelHeading>
+          <Panel.Heading>
+            <Panel.Title toggle>Filter</Panel.Title>
+          </Panel.Heading>
           <Panel.Body collapsible>
             <IssueFilter />
           </Panel.Body>
         </Panel>
-
         <IssueTable
           issues={issues}
           closeIssue={this.closeIssue}
           deleteIssue={this.deleteIssue}
         />
-
         <IssueDetail issue={selectedIssue} />
-        <Toast
-          showing={toastVisible}
-          onDismiss={this.dismissToast}
-          bsStyle={toastType}
-        >
-          {toastMessage}
-        </Toast>
       </React.Fragment>
     );
   }
 }
+
+const IssueListWithToast = withToast(IssueList);
+IssueListWithToast.fetchData = IssueList.fetchData;
+
+export default IssueListWithToast;

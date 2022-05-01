@@ -1,9 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import DateInput from "./DateInput.jsx";
-import graphQLFetch from "./graphQLFetch";
-import NumInput from "./NumInput.jsx";
-import TextInput from "./TextInput.jsx";
 import { LinkContainer } from "react-router-bootstrap";
 import {
   Col,
@@ -16,9 +12,15 @@ import {
   Button,
   Alert,
 } from "react-bootstrap";
-import Toast from "./Toast.jsx";
+
+import graphQLFetch from "./graphQLFetch.js";
+import NumInput from "./NumInput.jsx";
+import DateInput from "./DateInput.jsx";
+import TextInput from "./TextInput.jsx";
+import withToast from "./withToast.jsx";
 import store from "./store.js";
-export default class IssueEdit extends React.Component {
+
+class IssueEdit extends React.Component {
   static async fetchData(match, search, showError) {
     const query = `query issue($id: Int!) {
       issue(id: $id) {
@@ -26,12 +28,14 @@ export default class IssueEdit extends React.Component {
         effort created due description
       }
     }`;
+
     const {
       params: { id },
     } = match;
     const result = await graphQLFetch(query, { id }, showError);
     return result;
   }
+
   constructor() {
     super();
     const issue = store.initialData ? store.initialData.issue : null;
@@ -40,23 +44,19 @@ export default class IssueEdit extends React.Component {
       issue,
       invalidFields: {},
       showingValidation: false,
-      toastVisible: false,
-      toastMessage: "",
-      toastType: "success",
     };
     this.onChange = this.onChange.bind(this);
-    this.onValidityChange = this.onValidityChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.showValidation = this.showValidation.bind(this);
+    this.onValidityChange = this.onValidityChange.bind(this);
     this.dismissValidation = this.dismissValidation.bind(this);
-    this.showSuccess = this.showSuccess.bind(this);
-    this.showError = this.showError.bind(this);
-    this.dismissToast = this.dismissToast.bind(this);
+    this.showValidation = this.showValidation.bind(this);
   }
+
   componentDidMount() {
     const { issue } = this.state;
     if (issue == null) this.loadData();
   }
+
   componentDidUpdate(prevProps) {
     const {
       match: {
@@ -95,6 +95,7 @@ export default class IssueEdit extends React.Component {
     this.showValidation();
     const { issue, invalidFields } = this.state;
     if (Object.keys(invalidFields).length !== 0) return;
+
     const query = `mutation issueUpdate(
       $id: Int!
       $changes: IssueUpdateInputs!
@@ -103,51 +104,38 @@ export default class IssueEdit extends React.Component {
         id: $id
         changes: $changes
       ) {
-        id title status owner effort created due description
+        id title status owner
+        effort created due description
       }
     }`;
 
     const { id, created, ...changes } = issue;
-    const data = await graphQLFetch(query, { changes, id });
+    const { showSuccess, showError } = this.props;
+    const data = await graphQLFetch(query, { changes, id }, showError);
     if (data) {
       this.setState({ issue: data.issueUpdate });
-      this.showSuccess("Updated issue successfully");
+      showSuccess("Updated issue successfully");
     }
   }
 
   async loadData() {
-    const { match } = this.props;
-    const data = await IssueEdit.fetchData(match, null, this.showError);
+    const { match, showError } = this.props;
+    const data = await IssueEdit.fetchData(match, null, showError);
     this.setState({ issue: data ? data.issue : {}, invalidFields: {} });
   }
+
   showValidation() {
     this.setState({ showingValidation: true });
   }
+
   dismissValidation() {
     this.setState({ showingValidation: false });
   }
-  showSuccess(message) {
-    this.setState({
-      toastVisible: true,
-      toastMessage: message,
-      toastType: "success",
-    });
-  }
 
-  showError(message) {
-    this.setState({
-      toastVisible: true,
-      toastMessage: message,
-      toastType: "danger",
-    });
-  }
-
-  dismissToast() {
-    this.setState({ toastVisible: false });
-  }
   render() {
     const { issue } = this.state;
     if (issue == null) return null;
+
     const {
       issue: { id },
     } = this.state;
@@ -156,13 +144,13 @@ export default class IssueEdit extends React.Component {
         params: { id: propsId },
       },
     } = this.props;
-    const { toastVisible, toastMessage, toastType } = this.state;
     if (id == null) {
       if (propsId != null) {
         return <h3>{`Issue with ID ${propsId} not found.`}</h3>;
       }
       return null;
     }
+
     const { invalidFields, showingValidation } = this.state;
     let validationMessage;
     if (Object.keys(invalidFields).length !== 0 && showingValidation) {
@@ -172,8 +160,15 @@ export default class IssueEdit extends React.Component {
         </Alert>
       );
     }
+
     const {
-      issue: { title, status, owner, effort, description, created, due },
+      issue: { title, status },
+    } = this.state;
+    const {
+      issue: { owner, effort, description },
+    } = this.state;
+    const {
+      issue: { created, due },
     } = this.state;
 
     return (
@@ -311,14 +306,12 @@ export default class IssueEdit extends React.Component {
           {" | "}
           <Link to={`/edit/${id + 1}`}>Next</Link>
         </Panel.Footer>
-        <Toast
-          showing={toastVisible}
-          onDismiss={this.dismissToast}
-          bsStyle={toastType}
-        >
-          {toastMessage}
-        </Toast>
       </Panel>
     );
   }
 }
+
+const IssueEditWithToast = withToast(IssueEdit);
+IssueEditWithToast.fetchData = IssueEdit.fetchData;
+
+export default IssueEditWithToast;
