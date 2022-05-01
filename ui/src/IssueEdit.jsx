@@ -14,21 +14,48 @@ import {
   ControlLabel,
   ButtonToolbar,
   Button,
+  Alert,
 } from "react-bootstrap";
-
+import Toast from "./Toast.jsx";
+import store from "./store.js";
 export default class IssueEdit extends React.Component {
+  static async fetchData(match, search, showError) {
+    const query = `query issue($id: Int!) {
+      issue(id: $id) {
+        id title status owner
+        effort created due description
+      }
+    }`;
+    const {
+      params: { id },
+    } = match;
+    const result = await graphQLFetch(query, { id }, showError);
+    return result;
+  }
   constructor() {
     super();
+    const issue = store.initialData ? store.initialData.issue : null;
+    delete store.initialData;
     this.state = {
-      issue: {},
+      issue,
       invalidFields: {},
+      showingValidation: false,
+      toastVisible: false,
+      toastMessage: "",
+      toastType: "success",
     };
     this.onChange = this.onChange.bind(this);
     this.onValidityChange = this.onValidityChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.showValidation = this.showValidation.bind(this);
+    this.dismissValidation = this.dismissValidation.bind(this);
+    this.showSuccess = this.showSuccess.bind(this);
+    this.showError = this.showError.bind(this);
+    this.dismissToast = this.dismissToast.bind(this);
   }
   componentDidMount() {
-    this.loadData();
+    const { issue } = this.state;
+    if (issue == null) this.loadData();
   }
   componentDidUpdate(prevProps) {
     const {
@@ -65,6 +92,7 @@ export default class IssueEdit extends React.Component {
 
   async handleSubmit(e) {
     e.preventDefault();
+    this.showValidation();
     const { issue, invalidFields } = this.state;
     if (Object.keys(invalidFields).length !== 0) return;
     const query = `mutation issueUpdate(
@@ -83,33 +111,43 @@ export default class IssueEdit extends React.Component {
     const data = await graphQLFetch(query, { changes, id });
     if (data) {
       this.setState({ issue: data.issueUpdate });
-      alert("Updated issue successfully");
+      this.showSuccess("Updated issue successfully");
     }
   }
 
   async loadData() {
-    const query = `query issue($id: Int!) {
-      issue(id: $id) {
-        id title status owner effort created due description
-      }
-    }`;
+    const { match } = this.props;
+    const data = await IssueEdit.fetchData(match, null, this.showError);
+    this.setState({ issue: data ? data.issue : {}, invalidFields: {} });
+  }
+  showValidation() {
+    this.setState({ showingValidation: true });
+  }
+  dismissValidation() {
+    this.setState({ showingValidation: false });
+  }
+  showSuccess(message) {
+    this.setState({
+      toastVisible: true,
+      toastMessage: message,
+      toastType: "success",
+    });
+  }
 
-    const {
-      match: {
-        params: { id },
-      },
-    } = this.props;
-    const data = await graphQLFetch(query, { id });
-    if (data) {
-      const { issue } = data;
-      issue.owner = issue.owner != null ? issue.owner : "";
-      issue.description = issue.description != null ? issue.description : "";
-      this.setState({ issue, invalidFields: {} });
-    } else {
-      this.setState({ issue: {}, invalidFeilds: {} });
-    }
+  showError(message) {
+    this.setState({
+      toastVisible: true,
+      toastMessage: message,
+      toastType: "danger",
+    });
+  }
+
+  dismissToast() {
+    this.setState({ toastVisible: false });
   }
   render() {
+    const { issue } = this.state;
+    if (issue == null) return null;
     const {
       issue: { id },
     } = this.state;
@@ -118,19 +156,20 @@ export default class IssueEdit extends React.Component {
         params: { id: propsId },
       },
     } = this.props;
+    const { toastVisible, toastMessage, toastType } = this.state;
     if (id == null) {
       if (propsId != null) {
         return <h3>{`Issue with ID ${propsId} not found.`}</h3>;
       }
       return null;
     }
-    const { invalidFields } = this.state;
+    const { invalidFields, showingValidation } = this.state;
     let validationMessage;
-    if (Object.keys(invalidFields).length !== 0) {
+    if (Object.keys(invalidFields).length !== 0 && showingValidation) {
       validationMessage = (
-        <div className="error">
+        <Alert bsStyle="danger" onDismiss={this.dismissValidation}>
           Please correct invalid fields before submitting.
-        </div>
+        </Alert>
       );
     }
     const {
@@ -260,14 +299,25 @@ export default class IssueEdit extends React.Component {
                 </ButtonToolbar>
               </Col>
             </FormGroup>
+            <FormGroup>
+              <Col smOffset={3} sm={9}>
+                {validationMessage}
+              </Col>
+            </FormGroup>
           </Form>
-          {validationMessage}
         </Panel.Body>
         <Panel.Footer>
           <Link to={`/edit/${id - 1}`}>Prev</Link>
           {" | "}
           <Link to={`/edit/${id + 1}`}>Next</Link>
         </Panel.Footer>
+        <Toast
+          showing={toastVisible}
+          onDismiss={this.dismissToast}
+          bsStyle={toastType}
+        >
+          {toastMessage}
+        </Toast>
       </Panel>
     );
   }
