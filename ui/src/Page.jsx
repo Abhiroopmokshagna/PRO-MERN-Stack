@@ -13,6 +13,7 @@ import Contents from "./Contents.jsx";
 import { LinkContainer } from "react-router-bootstrap";
 import IssueAddNavItem from "./IssueAddNavItem.jsx";
 import Search from "./Search.jsx";
+import SigninNavItem from "./SigninNavItem.jsx";
 
 function NavBar() {
   return (
@@ -38,6 +39,7 @@ function NavBar() {
       </Col>
       <Nav pullRight>
         <IssueAddNavItem />
+        <SigninNavItem />
         <NavDropdown
           id="user-dropdown"
           title={<Glyphicon glyph="option-vertical" />}
