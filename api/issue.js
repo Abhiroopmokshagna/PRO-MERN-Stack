@@ -1,7 +1,7 @@
 const { UserInputError } = require("apollo-server-express");
 const { getDb, getNextSequence } = require("./db.js");
 
-async function list(_, { status, effortMin, effortMax, page }) {
+async function list(_, { status, effortMin, effortMax, search, page }) {
   const db = getDb();
   const filter = {};
   const PAGE_SIZE = 10;
@@ -11,6 +11,7 @@ async function list(_, { status, effortMin, effortMax, page }) {
     if (effortMin !== undefined) filter.effort.$gte = effortMin;
     if (effortMax !== undefined) filter.effort.$lte = effortMax;
   }
+  if (search) filter.$text = { $search: search };
   const cursor = await db
     .collection("issues")
     .find(filter)

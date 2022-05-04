@@ -65,6 +65,7 @@ type Query {
     effortMin: Int
     effortMax: Int
     page: Int = 1
+    search: String
   ): IssueListWithPages
   issue(id: Int!): Issue!
   issueCounts(
