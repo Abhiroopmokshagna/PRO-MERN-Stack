@@ -7,7 +7,6 @@ class SigninNavItem extends Component {
     super(props);
     this.state = {
       showing: false,
-      user: { signedIn: false, givenName: "" },
       disabled: true,
     };
     this.showModal = this.showModal.bind(this);
@@ -38,7 +37,8 @@ class SigninNavItem extends Component {
       const body = await response.text();
       const result = JSON.parse(body);
       const { signedIn, givenName } = result;
-      this.setState({ user: { signedIn, givenName } });
+      const { onUserChange } = this.props;
+      onUserChange({ signedIn, givenName });
     } catch (error) {
       showError(`Error signing into app: ${error}`);
     }
@@ -53,7 +53,8 @@ class SigninNavItem extends Component {
       });
       const auth2 = window.gapi.auth2.getAuthInstance();
       await auth2.signOut();
-      this.setState({ user: { signedIN: false, givenName: "" } });
+      const { onUserChange } = this.props;
+      onUserChange({ signedIn: false, givenName: "" });
     } catch (error) {
       showError(`Error signing out: ${error}`);
     }
@@ -74,7 +75,7 @@ class SigninNavItem extends Component {
     this.setState({ showing: false });
   }
 
-  async componentDidMount() {
+  componentDidMount() {
     const clientId = window.ENV.GOOGLE_CLIENT_ID;
     if (!clientId) return;
     window.gapi.load("auth2", () => {
@@ -84,20 +85,10 @@ class SigninNavItem extends Component {
         });
       }
     });
-    await this.loadData();
   }
-  async loadData() {
-    const apiEndpoint = window.ENV.UI_AUTH_ENDPOINT;
-    const response = await fetch(`${apiEndpoint}/user`, {
-      method: "POST",
-    });
-    const body = await response.text();
-    const result = JSON.parse(body);
-    const { signedIn, givenName } = result;
-    this.setState({ user: { signedIn, givenName } });
-  }
+
   render() {
-    const { user } = this.state;
+    const { user } = this.props;
     if (user.signedIn) {
       return (
         <NavDropdown title={user.givenName} id="user">
