@@ -1,5 +1,6 @@
 const { UserInputError } = require("apollo-server-express");
 const { getDb, getNextSequence } = require("./db.js");
+const { mustBeSignedIn } = require("./auth.js");
 
 async function list(_, { status, effortMin, effortMax, search, page }) {
   const db = getDb();
@@ -131,4 +132,12 @@ async function get(_, { id }) {
   return issue;
 }
 
-module.exports = { list, add, get, update, delete: remove, counts, restore };
+module.exports = {
+  list,
+  add: mustBeSignedIn(add),
+  get,
+  update: mustBeSignedIn(update),
+  delete: mustBeSignedIn(remove),
+  counts,
+  restore: mustBeSignedIn(restore),
+};

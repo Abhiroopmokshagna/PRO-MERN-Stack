@@ -1,6 +1,8 @@
 const Router = require("express");
 const bodyParser = require("body-parser");
 const jwt = require("jsonwebtoken");
+const { AuthenticationError } = require("apollo-server-express");
+
 const { OAuth2Client } = require("google-auth-library");
 const routes = new Router();
 
@@ -16,6 +18,14 @@ if (!JWT_SECRET) {
 }
 routes.use(bodyParser.json());
 
+function mustBeSignedIn(resolver) {
+  return (root, args, { user }) => {
+    if (!user || !user.signedIn) {
+      throw new AuthenticationError("You must be signed in");
+    }
+    return resolver(root, args, { user });
+  };
+}
 function getUser(req) {
   const token = req.cookies.jwt;
   if (!token) return { signedIn: false };
@@ -62,4 +72,4 @@ routes.post("/signout", async (req, res) => {
   res.clearCookie("jwt");
   res.json({ status: "ok" });
 });
-module.exports = { routes };
+module.exports = { routes, getUser, mustBeSignedIn };
