@@ -74,4 +74,9 @@ routes.post("/signout", async (req, res) => {
   res.clearCookie("jwt");
   res.json({ status: "ok" });
 });
-module.exports = { routes, getUser, mustBeSignedIn };
+
+function resolveUser(_, args, { user }) {
+  return user;
+}
+
+module.exports = { routes, getUser, mustBeSignedIn, resolveUser };
