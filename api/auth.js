@@ -1,6 +1,7 @@
 const Router = require("express");
 const bodyParser = require("body-parser");
 const jwt = require("jsonwebtoken");
+const cors = require("cors");
 const { AuthenticationError } = require("apollo-server-express");
 
 const { OAuth2Client } = require("google-auth-library");
@@ -17,7 +18,8 @@ if (!JWT_SECRET) {
   }
 }
 routes.use(bodyParser.json());
-
+const origin = process.env.UI_SERVER_ORIGIN || "http://localhost:8000";
+routes.use(cors({ origin, credentials: true }));
 function mustBeSignedIn(resolver) {
   return (root, args, { user }) => {
     if (!user || !user.signedIn) {

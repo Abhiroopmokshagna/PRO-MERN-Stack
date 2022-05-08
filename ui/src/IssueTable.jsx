@@ -8,9 +8,26 @@ import {
   Tooltip,
   Table,
 } from "react-bootstrap";
-const IssueRow = withRouter(
-  ({ issue, location: { search }, closeIssue, deleteIssue, index }) => {
+import UserContext from "./UserContext.js";
+
+class IssueRowPlain extends React.Component {
+  render() {
+    const {
+      issue,
+      location: { search },
+      closeIssue,
+      deleteIssue,
+      index,
+    } = this.props;
+    const user = this.context;
+    const disabled = !user.signedIn;
+
     const selectLocation = { pathname: `/issues/${issue.id}`, search };
+    const editTooltip = (
+      <Tooltip id="close-tooltip" placement="top">
+        Edit Issue
+      </Tooltip>
+    );
     const closeTooltip = (
       <Tooltip id="close-tooltip" placement="top">
         Close Issue
@@ -19,11 +36,6 @@ const IssueRow = withRouter(
     const deleteTooltip = (
       <Tooltip id="delete-tooltip" placement="top">
         Delete Issue
-      </Tooltip>
-    );
-    const editTooltip = (
-      <Tooltip id="edit-tooltip" placement="top">
-        Edit Issue
       </Tooltip>
     );
 
@@ -44,7 +56,7 @@ const IssueRow = withRouter(
         <td>{issue.owner}</td>
         <td>{issue.created.toDateString()}</td>
         <td>{issue.effort}</td>
-        <td>{issue.due ? issue.due.toDateString() : " "}</td>
+        <td>{issue.due ? issue.due.toDateString() : ""}</td>
         <td>{issue.title}</td>
         <td>
           <LinkContainer to={`/edit/${issue.id}`}>
@@ -53,24 +65,28 @@ const IssueRow = withRouter(
                 <Glyphicon glyph="edit" />
               </Button>
             </OverlayTrigger>
-          </LinkContainer>
+          </LinkContainer>{" "}
           <OverlayTrigger delayShow={1000} overlay={closeTooltip}>
-            <Button bsSize="xsmall" onClick={onClose}>
+            <Button disabled={disabled} bsSize="xsmall" onClick={onClose}>
               <Glyphicon glyph="remove" />
             </Button>
-          </OverlayTrigger>
-          {"  "}
+          </OverlayTrigger>{" "}
           <OverlayTrigger delayShow={1000} overlay={deleteTooltip}>
-            <Button bsSize="xsmall" onClick={onDelete}>
+            <Button disabled={disabled} bsSize="xsmall" onClick={onDelete}>
               <Glyphicon glyph="trash" />
             </Button>
           </OverlayTrigger>
         </td>
       </tr>
     );
+
     return <LinkContainer to={selectLocation}>{tableRow}</LinkContainer>;
   }
-);
+}
+
+IssueRowPlain.contextType = UserContext;
+const IssueRow = withRouter(IssueRowPlain);
+delete IssueRow.contextType;
 
 export default function IssueTable({ issues, closeIssue, deleteIssue }) {
   const issueRows = issues.map((issue, index) => (
